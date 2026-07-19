@@ -12,11 +12,11 @@ try {
 
     Push-Location $projectRoot
     try {
-        Write-Host 'Building and testing the Maven WAR...'
+        Write-Host 'Building and testing the executable Maven JAR...'
         & .\mvnw.cmd clean package
         if ($LASTEXITCODE -ne 0) { throw "Maven package failed with exit code $LASTEXITCODE." }
-        $artifact = Join-Path $projectRoot 'target\usuariosBuild.war'
-        if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) { throw 'Expected WAR was not generated.' }
+        $artifact = Join-Path $projectRoot 'target\usuariosBuild.jar'
+        if (-not (Test-Path -LiteralPath $artifact -PathType Leaf)) { throw 'Expected executable JAR was not generated.' }
 
         Write-Host "Building Docker image $imageName..."
         & docker build --pull --tag $imageName .

@@ -64,7 +64,7 @@ Estas variables no son necesarias para compilar o probar. En despliegue deben in
 .\mvnw.cmd clean package
 rg -n --hidden -g '!target/**' -g '!.git/**' `
   '(database-1\.|amazonaws\.com|jdbc:mysql://[^$]|NOMBRE_USERNAME|PASSWORD_GENERADA|spring\.datasource\.(username|password)=)' .
-Get-Item target\usuariosBuild.war
+Get-Item target\usuariosBuild.jar
 ```
 
 No se ejecutaron comandos Docker, AWS, Jenkins o Git de escritura.
@@ -92,8 +92,8 @@ No se ejecutaron comandos Docker, AWS, Jenkins o Git de escritura.
 - Omitidas: 0.
 - Tiempo de pruebas: 7,629 s.
 - Tiempo total Maven: 18,560 s.
-- Artefacto: `C:\Dev\Duoc\HeDevops\EFT\UsuariosREST\target\usuariosBuild.war`.
-- Tamaño: 52.533.395 bytes, aproximadamente 50,1 MiB.
+- Artefacto: `C:\Dev\Duoc\HeDevops\EFT\UsuariosREST\target\usuariosBuild.jar`.
+- Tamaño actual: 52.533.081 bytes, aproximadamente 50,1 MiB.
 
 Las dos pruebas confirman que el contexto carga con H2 y que el repositorio guarda y recupera un usuario.
 
@@ -112,8 +112,8 @@ Ninguno es un secreto real.
 - Los campos de la entidad son anulables y `email` no tiene unicidad. No bloquean H2 y no se cambiaron para evitar alterar el contrato/esquema fuera del alcance.
 - `ddl-auto=update` permanece en la configuración MySQL y debe revisarse antes del despliegue productivo.
 - Falta validar las cinco variables contra una instancia RDS real; eso pertenece al bloque AWS posterior.
-- Siguen pendientes pruebas CRUD HTTP, Docker, Jenkins y la decisión JAR/WAR.
+- Siguen pendientes las evidencias de ejecución de Docker y Jenkins descritas en los bloques posteriores.
 
 ## 9. Conclusión
 
-La compilación quedó desacoplada de RDS. Maven crea un entorno H2 nuevo durante cada ejecución, carga el contexto, valida el repositorio y genera el WAR con todas las pruebas activas. La aplicación normal conserva el driver y la URL MySQL parametrizada para una futura conexión segura a AWS RDS.
+La compilación quedó desacoplada de RDS. Maven crea un entorno H2 nuevo durante cada ejecución, carga el contexto, valida el repositorio y genera el JAR ejecutable con todas las pruebas activas. La aplicación normal conserva el driver y la URL MySQL parametrizada para una conexión segura a AWS RDS.

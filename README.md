@@ -1,6 +1,6 @@
 # UsuariosREST
 
-API CRUD de usuarios construida con Spring Boot 3.2.4, Java 17, Maven, MySQL y Docker. El artefacto es un WAR desplegado como aplicación raíz sobre Tomcat.
+API CRUD de usuarios construida con Spring Boot 3.2.4, Java 17, Maven, MySQL y Docker. El artefacto es un JAR ejecutable de Spring Boot con Tomcat embebido.
 
 ## Verificación local
 

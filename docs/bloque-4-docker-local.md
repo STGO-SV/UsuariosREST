@@ -4,11 +4,11 @@ Fecha de validación: 19 de julio de 2026.
 
 ## Estado
 
-**IMPLEMENTADO Y VERIFICADO.** Docker Desktop/Engine 29.4.3 estuvo operativo y se utilizó la estrategia WAR sobre Tomcat acordada para el proyecto. No se modificó ningún recurso AWS.
+**IMPLEMENTADO Y VERIFICADO.** Docker Desktop/Engine 29.4.3 estuvo operativo. La aplicación se empaqueta como JAR ejecutable de Spring Boot y usa Tomcat embebido. No se modificó ningún recurso AWS.
 
 ## Implementación
 
-- `Dockerfile` usa `tomcat:10.1.23-jre21`, elimina aplicaciones de ejemplo y despliega `target/usuariosBuild.war` como `ROOT.war`; las rutas quedan en `/` y `/user`.
+- `Dockerfile` usa un runtime Java 17, copia `target/usuariosBuild.jar` y lo inicia con `java -jar`; las rutas permanecen en `/` y `/user`.
 - `.dockerignore` excluye Git, secretos, fuentes y archivos ajenos al artefacto. `.env.rds` no forma parte del contexto.
 - `build-docker-image.ps1` exige un `clean package` exitoso antes de construir `usuarios-rest:local`.
 - `run-docker-local.ps1` carga `.env.rds` con `--env-file`, usa el nombre estable `usuarios-rest-local` y espera la respuesta HTTP.
@@ -21,8 +21,8 @@ Fecha de validación: 19 de julio de 2026.
 |---|---|
 | `docker build --check .` | Sin advertencias |
 | Maven previo al build | BUILD SUCCESS, sin omitir pruebas |
-| Imagen final | `usuarios-rest:local`, 157.820.110 bytes (~150,5 MiB) |
-| Inicio | Contenedor disponible por HTTP en aproximadamente 15 s |
+| Imagen final JAR | `usuarios-rest:local`, 141.122.261 bytes (~134,6 MiB) |
+| Inicio | Contenedor disponible por HTTP en aproximadamente 14 s |
 | Hibernate | Conexión MySQL iniciada y esquema validado |
 | `GET /user` inicial | HTTP 200, 10 registros oficiales |
 | POST/GET/PUT/GET/DELETE | HTTP 200 en cada operación |
@@ -42,7 +42,7 @@ Las credenciales se inyectaron desde el archivo local ignorado. No se imprimiero
 
 ## Riesgos pendientes
 
-- Tomcat se ejecuta con el usuario predeterminado privilegiado de la imagen; debe endurecerse en producción.
+- El proceso Java se ejecuta con el usuario predeterminado privilegiado de la imagen; debe endurecerse en producción.
 - La etiqueta base está fijada por versión, no por digest.
 - La conexión JDBC conserva TLS desactivado según la configuración académica actual.
 - La prueba real depende de que RDS siga disponible y permita la IP de origen.

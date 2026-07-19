@@ -12,7 +12,7 @@
 	<groupId>com.usuarios</groupId>
 	<artifactId>UsuariosRest</artifactId>
 	<version>1.0</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>UsuariosRest</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -81,6 +81,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<mainClass>com.usuarios.UsuariosRest.UsuariosRestApplication</mainClass>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>

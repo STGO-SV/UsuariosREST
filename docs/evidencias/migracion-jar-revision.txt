@@ -1,0 +1,96 @@
+REVISIÓN FINAL - MIGRACIÓN A JAR EJECUTABLE
+Repositorio: C:\Dev\Duoc\HeDevops\EFT\UsuariosREST
+Fecha: 2026-07-19
+
+1. git status --short
+
+ M .dockerignore
+ M .gitignore
+ M Dockerfile
+ M README.md
+ D docs/auditoria-inicial.md
+ M docs/bloque-1-compilacion-reproducible.md
+ M docs/bloque-2-esquema-rds.md
+ M docs/bloque-4-docker-local.md
+ M docs/ciclo-de-vida-devops.md
+ D docs/plan-minimo-80-puntos.md
+ M pom.xml
+ M scripts/build-docker-image.ps1
+ M scripts/deploy-on-ec2.sh
+ D src/main/java/com/usuarios/UsuariosRest/ServletInitializer.java
+?? docs/evidencias/
+
+2. Archivos incluidos exactamente en migracion-jar.patch
+
+1. .dockerignore
+2. Dockerfile
+3. README.md
+4. docs/bloque-1-compilacion-reproducible.md
+5. docs/bloque-2-esquema-rds.md
+6. docs/bloque-4-docker-local.md
+7. docs/ciclo-de-vida-devops.md
+8. pom.xml
+9. scripts/build-docker-image.ps1
+10. scripts/deploy-on-ec2.sh
+11. src/main/java/com/usuarios/UsuariosRest/ServletInitializer.java (eliminación)
+
+El patch contiene 11 secciones "diff --git" y coincide línea por línea con un git diff limitado exclusivamente a estas rutas.
+
+3. Cambios ajenos excluidos del patch
+
+- .gitignore (modificación preexistente)
+- docs/auditoria-inicial.md (eliminación preexistente)
+- docs/plan-minimo-80-puntos.md (eliminación preexistente)
+
+Confirmaciones explícitas:
+- El patch NO incluye cambios de .gitignore.
+- El patch NO incluye la eliminación de docs/auditoria-inicial.md.
+- El patch NO incluye la eliminación de docs/plan-minimo-80-puntos.md.
+- Los dos archivos de docs/evidencias/ tampoco forman parte del patch; son evidencia externa al cambio de migración.
+
+4. git diff --stat limitado a la migración
+
+ .dockerignore                                               |  2 +-
+ Dockerfile                                                  | 10 ++++++----
+ README.md                                                   |  2 +-
+ docs/bloque-1-compilacion-reproducible.md                   | 10 +++++-----
+ docs/bloque-2-esquema-rds.md                                |  2 +-
+ docs/bloque-4-docker-local.md                               | 10 +++++-----
+ docs/ciclo-de-vida-devops.md                                |  3 +--
+ pom.xml                                                     |  3 ++-
+ scripts/build-docker-image.ps1                              |  6 +++---
+ scripts/deploy-on-ec2.sh                                    |  2 +-
+ .../java/com/usuarios/UsuariosRest/ServletInitializer.java  | 13 -------------
+ 11 files changed, 26 insertions(+), 37 deletions(-)
+
+5. Seguridad del patch
+
+Resultado: SIN SECRETOS DETECTADOS.
+Coincidencias totales: 0.
+Patrones revisados: claves de acceso AWS, tokens GitHub, claves privadas, endpoints RDS y URLs con credenciales.
+El patch no contiene contraseñas ni valores de .env.rds.
+
+6. Hashes SHA-256
+
+JAR: target\usuariosBuild.jar
+SHA-256 JAR: 3653643D5466FF3E726A4F3EB38DCBE2DC3C4A5EE79BB43F1B90EBBB8683D751
+Tamaño JAR: 52.533.081 bytes
+
+Patch: docs\evidencias\migracion-jar.patch
+SHA-256 patch: 5DAE948760F1A8AD45616F7E3E4C9076B68AB22261EEC712C8239A647F5615F6
+Tamaño patch: 11.439 bytes
+
+7. Resultado final de .\mvnw.cmd clean package
+
+Resultado: BUILD SUCCESS
+Packaging: jar
+Pruebas ejecutadas: 4
+Fallos: 0
+Errores: 0
+Omitidas: 0
+Tiempo de pruebas: 8,298 s
+Tiempo total Maven: 17,751 s
+Artefacto: C:\Dev\Duoc\HeDevops\EFT\UsuariosREST\target\usuariosBuild.jar
+No se utilizó -DskipTests.
+
+Conclusión: el patch está limpio, limitado exclusivamente a los 11 cambios de la migración JAR y listo para revisión/selección manual. No se realizaron git add, commit, push, merge, pull ni rebase.

@@ -115,7 +115,7 @@ La salida esperada incluye resolución DNS, TCP exitoso, `schema=municipalidad_l
 | `.\mvnw.cmd clean test` | `BUILD SUCCESS` | 2; 0 fallos, 0 errores, 0 omitidas | 14,637 s total; 7,293 s pruebas |
 | `.\mvnw.cmd clean package` | `BUILD SUCCESS` | 2; 0 fallos, 0 errores, 0 omitidas | 18,509 s total; 7,421 s pruebas |
 
-Artefacto: `C:\Dev\Duoc\HeDevops\EFT\UsuariosREST\target\usuariosBuild.war`, 52.533.475 bytes (~50,1 MiB). No se usó `-DskipTests`.
+Artefacto actual: `C:\Dev\Duoc\HeDevops\EFT\UsuariosREST\target\usuariosBuild.jar`. Se genera mediante `clean package` sin `-DskipTests`; el tamaño se verifica en cada build.
 
 ## 12. Validaciones realizadas
 

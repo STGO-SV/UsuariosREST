@@ -1,11 +1,13 @@
-FROM tomcat:10.1.23-jre21
+FROM eclipse-temurin:17-jre-jammy
 
 LABEL org.opencontainers.image.title="UsuariosREST" \
-      org.opencontainers.image.description="API Spring Boot WAR para la evaluación EFT" \
+      org.opencontainers.image.description="API Spring Boot JAR para la evaluación EFT" \
       org.opencontainers.image.version="1.0"
 
-RUN rm -rf /usr/local/tomcat/webapps/*
+WORKDIR /app
 
-COPY target/usuariosBuild.war /usr/local/tomcat/webapps/ROOT.war
+COPY target/usuariosBuild.jar app.jar
 
 EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

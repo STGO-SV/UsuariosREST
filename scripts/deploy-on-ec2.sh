@@ -20,7 +20,7 @@ done
 
 cd "${project_root}"
 chmod +x mvnw
-echo "Building and testing WAR..."
+echo "Building and testing executable JAR..."
 ./mvnw clean package
 echo "Building Docker image..."
 docker build --tag "${image_name}" .

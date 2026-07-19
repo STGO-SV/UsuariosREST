@@ -252,3 +252,17 @@ No se cambió la entidad: `@Table(name="users")`, `GenerationType.IDENTITY`, `fi
 Un escaneo posterior no encontró el endpoint RDS original, una URL JDBC externa, nombre de usuario real, contraseña real ni los placeholders anteriores en archivos activos. `sa` con contraseña vacía existe exclusivamente en la base H2 efímera de pruebas. La configuración normal requiere inyectar credenciales válidas para funcionar contra MySQL/RDS.
 
 Persisten fuera del alcance de este bloque: validar conectividad real con RDS, decidir WAR frente a JAR, verificar Docker, crear Jenkins y pruebas CRUD HTTP, revisar nulabilidad/unicidad del modelo, y definir una política de migración más controlada que `ddl-auto=update` para despliegue.
+
+## Corrección posterior a la auditoría: normalización del esquema MySQL
+
+Fecha de corrección: 19 de julio de 2026.
+
+El script oficial adjunto se leyó directamente desde su archivo original, que se conservó sin cambios (SHA-256 observado: `D9592CF85F97903DAA2C770340BF129D75EE8C7E17F45ACCE1A8D08F012F5729`). Este define la base `municipalidad_la_florida`, la tabla `users`, las columnas `id`, `firstName`, `lastName` y `email`, y diez registros iniciales con acentos.
+
+Se detectó una incompatibilidad objetiva: sin nombres de columna explícitos, la estrategia física predeterminada de Spring Boot/Hibernate convierte propiedades camelCase a nombres con guion bajo, por lo que `firstName` y `lastName` se buscarían como `first_name` y `last_name`. La entidad ahora fija `@Column(name="firstName")` y `@Column(name="lastName")`, sin cambiar propiedades Java ni JSON. También refleja `VARCHAR(255) NOT NULL`, correo único e identidad autoincremental del script oficial.
+
+La estrategia normal cambió de `ddl-auto=update` a `ddl-auto=validate`: el script crea el esquema y Hibernate comprueba el contrato sin crear, destruir ni modificar datos. El perfil H2 conserva `create-drop` exclusivamente para pruebas. La URL MySQL 8 sigue parametrizada con `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME` y `DB_PASSWORD`, y ahora declara Unicode/UTF-8 y zona horaria UTC.
+
+Se crearon scripts separados e idempotentes bajo `database/` para crear, cargar los diez datos oficiales y verificar la base. También se añadieron scripts PowerShell para configurar una RDS existente y comprobar DNS, TCP, autenticación, esquema, tabla y conteo sin imprimir la contraseña. `.env.example` contiene solo valores ficticios y `.gitignore` excluye `.env`, `.env.local`, `.env.aws` y `.env.ec2`.
+
+Validación: `mvnw.cmd clean test` finalizó en 14,637 s y `mvnw.cmd clean package` en 18,509 s; ambos ejecutaron 2 pruebas con 0 fallos, 0 errores y 0 omitidas. El WAR resultante mide 52.533.475 bytes. Los scripts PowerShell pasan análisis sintáctico y rechazan variables ausentes con código distinto de cero. No se pudo ejecutar MySQL real porque el cliente `mysql` no está instalado y Docker Engine continúa detenido; la ejecución contra RDS permanece pendiente.

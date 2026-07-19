@@ -41,12 +41,12 @@ public class UsuarioModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column
+    @Column(name = "firstName", nullable = false, length = 255)
     private String firstName;
 
-    @Column
+    @Column(name = "lastName", nullable = false, length = 255)
     private String lastName;
 
-    @Column
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 }

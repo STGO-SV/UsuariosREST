@@ -27,3 +27,4 @@ Endpoints principales: `GET /`, `GET /user`, `GET /user/{id}`, `POST /user`, `PU
 - [Base de datos y RDS](docs/bloque-3-rds-real.md)
 - [Docker local](docs/bloque-4-docker-local.md)
 - [Preparación EC2/Jenkins](docs/bloque-5-preparacion-ec2-jenkins.md)
+Validación de integración automática GitHub–Jenkins.

@@ -37,3 +37,4 @@ build/
 .env.local
 .env.aws
 .env.ec2
+.env.rds

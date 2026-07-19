@@ -5,6 +5,30 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $expectedDatabase = 'municipalidad_la_florida'
 $requiredVariables = @('DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USERNAME', 'DB_PASSWORD')
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$environmentFile = Join-Path $projectRoot '.env.rds'
+$fallbackMySql = 'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe'
+
+function Import-DatabaseEnvironment {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Environment file not found: $Path"
+    }
+    foreach ($line in Get-Content -Encoding UTF8 -LiteralPath $Path) {
+        $trimmed = $line.Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith('#')) { continue }
+        $separatorIndex = $trimmed.IndexOf('=')
+        if ($separatorIndex -lt 1) { throw 'Invalid line found in .env.rds.' }
+        $name = $trimmed.Substring(0, $separatorIndex).Trim()
+        if ($name -notin $script:requiredVariables) { continue }
+        $value = $trimmed.Substring($separatorIndex + 1).Trim()
+        if ($value.Length -ge 2 -and (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'")))) {
+            $value = $value.Substring(1, $value.Length - 2)
+        }
+        [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+    }
+}
 
 function Get-RequiredEnvironmentVariable {
     param([Parameter(Mandatory)][string]$Name)
@@ -42,6 +66,7 @@ function Invoke-MySqlFile {
 }
 
 try {
+    Import-DatabaseEnvironment -Path $environmentFile
     foreach ($variable in $requiredVariables) {
         [void](Get-RequiredEnvironmentVariable -Name $variable)
     }
@@ -60,15 +85,23 @@ try {
         throw "DB_NAME must be '$expectedDatabase' because the official EFT scripts define that schema."
     }
 
-    $script:mysqlCommand = (Get-Command mysql -ErrorAction Stop).Source
-    Write-Host "mysql client found: $script:mysqlCommand"
-    Write-Host "Testing TCP connectivity to $script:dbHost`:$parsedPort..."
+    $mysqlOnPath = Get-Command mysql -ErrorAction SilentlyContinue
+    if ($mysqlOnPath) {
+        $script:mysqlCommand = $mysqlOnPath.Source
+    }
+    elseif (Test-Path -LiteralPath $fallbackMySql -PathType Leaf) {
+        $script:mysqlCommand = $fallbackMySql
+    }
+    else {
+        throw 'mysql client was not found in PATH or at the configured fallback location.'
+    }
+    Write-Host 'mysql client found.'
+    Write-Host "Testing TCP connectivity to the configured database on port $parsedPort..."
     $tcpResult = Test-NetConnection -ComputerName $script:dbHost -Port $parsedPort -WarningAction SilentlyContinue
     if (-not $tcpResult.TcpTestSucceeded) {
-        throw "TCP connection to $script:dbHost`:$parsedPort failed."
+        throw "TCP connection to the configured database on port $parsedPort failed."
     }
 
-    $projectRoot = Split-Path -Parent $PSScriptRoot
     $sqlDirectory = Join-Path $projectRoot 'database'
     $sqlFiles = @(
         (Join-Path $sqlDirectory '01-create-schema.sql'),

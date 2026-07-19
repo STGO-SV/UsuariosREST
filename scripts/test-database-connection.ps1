@@ -3,6 +3,30 @@ param()
 
 $ErrorActionPreference = 'Stop'
 $requiredVariables = @('DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USERNAME', 'DB_PASSWORD')
+$projectRoot = Split-Path -Parent $PSScriptRoot
+$environmentFile = Join-Path $projectRoot '.env.rds'
+$fallbackMySql = 'C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe'
+
+function Import-DatabaseEnvironment {
+    param([Parameter(Mandatory)][string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
+        throw "Environment file not found: $Path"
+    }
+    foreach ($line in Get-Content -Encoding UTF8 -LiteralPath $Path) {
+        $trimmed = $line.Trim()
+        if ([string]::IsNullOrWhiteSpace($trimmed) -or $trimmed.StartsWith('#')) { continue }
+        $separatorIndex = $trimmed.IndexOf('=')
+        if ($separatorIndex -lt 1) { throw 'Invalid line found in .env.rds.' }
+        $name = $trimmed.Substring(0, $separatorIndex).Trim()
+        if ($name -notin $script:requiredVariables) { continue }
+        $value = $trimmed.Substring($separatorIndex + 1).Trim()
+        if ($value.Length -ge 2 -and (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'")))) {
+            $value = $value.Substring(1, $value.Length - 2)
+        }
+        [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+    }
+}
 
 function Get-RequiredEnvironmentVariable {
     param([Parameter(Mandatory)][string]$Name)
@@ -15,6 +39,7 @@ function Get-RequiredEnvironmentVariable {
 }
 
 try {
+    Import-DatabaseEnvironment -Path $environmentFile
     foreach ($variable in $requiredVariables) {
         [void](Get-RequiredEnvironmentVariable -Name $variable)
     }
@@ -30,20 +55,29 @@ try {
         throw 'DB_PORT must be an integer between 1 and 65535.'
     }
 
-    Write-Host "Resolving DNS for $dbHost..."
+    Write-Host 'Resolving DNS for the configured database host...'
     $dnsResult = Resolve-DnsName -Name $dbHost -ErrorAction Stop | Where-Object { $_.IPAddress }
     if (-not $dnsResult) {
-        throw "DNS resolution returned no IP address for $dbHost."
+        throw 'DNS resolution returned no IP address for the configured database host.'
     }
-    Write-Host "DNS resolved: $($dnsResult.IPAddress -join ', ')"
+    Write-Host 'DNS resolution succeeded.'
 
-    Write-Host "Testing TCP connectivity to $dbHost`:$parsedPort..."
+    Write-Host "Testing TCP connectivity on port $parsedPort..."
     $tcpResult = Test-NetConnection -ComputerName $dbHost -Port $parsedPort -WarningAction SilentlyContinue
     if (-not $tcpResult.TcpTestSucceeded) {
-        throw "TCP connection to $dbHost`:$parsedPort failed."
+        throw "TCP connection on port $parsedPort failed."
     }
 
-    $mysqlCommand = (Get-Command mysql -ErrorAction Stop).Source
+    $mysqlOnPath = Get-Command mysql -ErrorAction SilentlyContinue
+    if ($mysqlOnPath) {
+        $mysqlCommand = $mysqlOnPath.Source
+    }
+    elseif (Test-Path -LiteralPath $fallbackMySql -PathType Leaf) {
+        $mysqlCommand = $fallbackMySql
+    }
+    else {
+        throw 'mysql client was not found in PATH or at the configured fallback location.'
+    }
     $query = "SELECT CONCAT('schema=', DATABASE()); SELECT CONCAT('users_table=', COUNT(*)) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'users'; SELECT CONCAT('user_count=', COUNT(*)) FROM users;"
     $arguments = @(
         '--protocol=TCP',
